@@ -13,9 +13,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Unzip project
-      run: |
-        unzip -o temp/quest-rpg.zip -d .
-        ls -la
+      run: unzip -o quest-rpg.zip -d .
 
     - name: Set up JDK 17
       uses: actions/setup-java@v4

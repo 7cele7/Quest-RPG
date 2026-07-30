@@ -21,8 +21,13 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Build APK
-      run: gradle assembleDebug --no-daemon
+    - name: Build APK (Debug)
+      run: |
+        # Créer un keystore debug temporaire
+        keytool -genkey -v -keystore debug.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=Android Debug, O=Android, C=US"
+        
+        # Construire l'APK
+        gradle assembleDebug --no-daemon -Pandroid.injected.signing.store.file=$(pwd)/debug.keystore -Pandroid.injected.signing.store.password=android -Pandroid.injected.signing.key.alias=androiddebugkey -Pandroid.injected.signing.key.password=android
 
     - name: Upload APK
       uses: actions/upload-artifact@v4

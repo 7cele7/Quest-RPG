@@ -13,7 +13,28 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Unzip project
-      run: unzip -o quest-rpg.zip -d .
+      run: |
+        # Décompresser le ZIP
+        unzip -o quest-rpg.zip
+        
+        # Si un dossier a été créé, déplacer son contenu à la racine
+        if [ -d "BibleQuest-RPG" ]; then
+          mv BibleQuest-RPG/* . && rm -rf BibleQuest-RPG
+        elif [ -d "biblequest-rpg" ]; then
+          mv biblequest-rpg/* . && rm -rf biblequest-rpg
+        elif [ -d "Quest-RPG" ]; then
+          mv Quest-RPG/* . && rm -rf Quest-RPG
+        fi
+        
+        ls -la
+
+    - name: List files for debug
+      run: |
+        echo "=== Contenu ==="
+        ls -la
+        echo "=== Vérification des fichiers Gradle ==="
+        find . -name "settings.gradle*" -type f
+        find . -name "build.gradle*" -type f
 
     - name: Set up JDK 17
       uses: actions/setup-java@v4
@@ -21,13 +42,15 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
+    - name: Make Gradle executable
+      run: chmod +x gradlew
+
     - name: Build APK (Debug)
       run: |
         # Créer un keystore debug temporaire
         keytool -genkey -v -keystore debug.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=Android Debug, O=Android, C=US"
-        
         # Construire l'APK
-        gradle assembleDebug --no-daemon -Pandroid.injected.signing.store.file=$(pwd)/debug.keystore -Pandroid.injected.signing.store.password=android -Pandroid.injected.signing.key.alias=androiddebugkey -Pandroid.injected.signing.key.password=android
+        ./gradlew assembleDebug
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
